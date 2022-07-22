@@ -1,0 +1,81 @@
+start_dir <- getwd()
+
+subj_id <- '01'
+dir_01 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_01 <- read.csv(dir_01)
+
+subj_id <- '02'
+dir_02 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_02 <- read.csv(dir_02)
+
+subj_id <- '03'
+dir_03 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_03 <- read.csv(dir_03)
+
+subj_id <- '04'
+dir_04 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_04 <- read.csv(dir_04)
+
+subj_id <- '05'
+dir_05 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_05 <- read.csv(dir_05)
+
+subj_id <- '06'
+dir_06 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_06 <- read.csv(dir_06)
+
+subj_id <- '07'
+dir_07 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_07 <- read.csv(dir_07)
+
+subj_id <- '08'
+dir_08 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_08 <- read.csv(dir_08)
+
+subj_id <- '09'
+dir_09 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_09 <- read.csv(dir_09)
+
+subj_id <- '10'
+dir_10 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_10 <- read.csv(dir_10)
+
+subj_id <- '11'
+dir_11 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_11 <- read.csv(dir_11)
+
+subj_id <- '12'
+dir_12 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_12 <- read.csv(dir_12)
+
+subj_id <- '13'
+dir_13 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_13 <- read.csv(dir_13)
+
+subj_id <- '14'
+dir_14 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_14 <- read.csv(dir_14)
+
+subj_id <- '15'
+dir_15 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_15 <- read.csv(dir_15)
+
+subj_id <- '16'
+dir_16 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_16 <- read.csv(dir_16)
+
+subj_id <- '17'
+dir_17 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_17 <- read.csv(dir_17)
+
+subj_id <- '19'
+dir_19 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_19 <- read.csv(dir_19)
+
+subj_id <- '20'
+dir_20 <- paste(start_dir, "/mPFE3_", subj_id, "/mPFE3_", subj_id, "_results.csv", sep = "")
+file_20 <- read.csv(dir_20)
+
+total <- rbind(file_01, file_02, file_03, file_04, file_05, file_06, file_07, file_08, file_09, file_10, file_11, file_12, file_13, file_14, file_15, file_16, file_17, file_19, file_20)
+out_dir <- paste(start_dir, "/mergedResults.csv", sep = "")
+write.csv(total, out_dir, row.names = FALSE)

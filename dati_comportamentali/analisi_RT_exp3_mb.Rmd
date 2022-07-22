@@ -1,0 +1,228 @@
+---
+title: "EXP3 pilot, version 3 (invested effort)"
+output: 
+  html_document:
+    df_print: kable
+params:
+# nelLa prossima riga inserosci il numero del soggetto.
+  subj_id: '20'
+---
+
+# Subject ``r params$subj_id``
+
+Abbreviations:
+
+* *neg*, *pos*, *scr*: negative, positive, and scrambled faces, respectively
+* *stim.near*, *stim.far*: position of the target (red ball) with respect to the face stimulus (*stim.near* = near the face stimulus)
+* *EXR*, *RLX*: level of invested effort (EXR=max, RLX=min)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE, comment="")
+
+library(rprime)
+library(dplyr)
+library(ggplot2)
+library(ggpubr)
+library(rstatix)
+library(knitr)
+library(pander)
+```
+
+```{r preprocessing}
+# nelLa prossima riga seleziona la cartella del soggetto. Non devi cmabiare niente
+setwd(paste("mPFE3_", params$subj_id, sep = ""))
+my_file <- paste("PFE_exp3_faces_fMRI_duplicaSchermo_invertiti-", params$subj_id, "-1.txt", sep ="")
+
+experiment_lines <- read_eprime(my_file)
+experiment_data <- FrameList(experiment_lines)
+
+just_level_3 <- keep_levels(experiment_data, 3)
+#preview_levels(just_level_3)
+
+df0 <- to_data_frame(just_level_3)
+
+df1 <- df0 %>%
+  select(Eprime.LevelName, stimL, valence, correctResp,
+         condition, TipoBlocco, Posizione, BloccoN,
+         Cycle, Sample, risp.RT, risp.RESP)
+
+names(df1) <- c(
+  "stim.idx.local", "stim.name", "valence", "resp.required", 
+  "condition", "effort", "target.pos", "block", 
+  "run", "stim.idx.global", "RT", "resp.issued")
+
+df1$stim.idx.local <- rep(1:112, 4)
+df1$stim.name <- factor(df1$stim.name)
+df1$valence <- factor(df1$valence)
+df1$resp.required <- factor(df1$resp.required, 
+                            labels = c("no", "yes"))
+df1$condition <- factor(df1$condition)
+df1$effort <- factor(df1$effort)
+df1$target.pos <- factor(df1$target.pos, 
+                         levels = c("V", "L", "F"),
+                         labels = c("stim.near", "stim.far", "foil"))
+df1$block <- factor(df1$block)
+df1$run <- factor(df1$run)
+df1$stim.idx.global <- as.numeric(df1$stim.idx.global)
+df1$RT <- as.numeric(df1$RT)
+df1$RT[df1$RT == 0] <- NA
+df1$RT <- df1$RT + 100
+df1$resp.issued <- factor(df1$resp.issued, 
+                          labels = c("no", "yes"))
+```
+
+## Number of correct responses
+
+```{r correct_responses_plot, fig.width=5, fig.height=3}
+df1_correct <- df1 %>%
+  filter(resp.required == "yes" & resp.issued == "yes" & target.pos != "foil") %>%
+  droplevels(except = c("valence", "effort"))
+table_correct <- with(df1_correct, table(effort, valence, target.pos))
+
+ggplot(as.data.frame(table_correct), aes(x = target.pos, y = Freq)) +
+  geom_bar(
+    aes(fill = valence), stat = "identity", color = "white",
+    position = position_dodge(0.9)) +
+  facet_wrap(~ effort) +
+  fill_palette("jco")
+ftable(table_correct)
+```
+
+## Number of errors of omission
+
+```{r omit_errors_plot, fig.width=5, fig.height=3}
+df1_err_omit <- df1 %>%
+  filter(resp.required == "yes" & resp.issued == "no"  & target.pos != "foil")  #%>%
+  #droplevels(except = c("valence", "effort")) # Commenta se non ci sono omissioni
+table_err_omit <- with(df1_err_omit, table(effort, valence, target.pos))
+
+ggplot(as.data.frame(table_err_omit), aes(x = target.pos, y = Freq)) +
+  geom_bar(
+    aes(fill = valence), stat = "identity", color = "white",
+    position = position_dodge(0.9)) +
+  facet_wrap(~ effort) +
+  fill_palette("jco")
+ftable(table_err_omit)
+```
+
+## Number of errors of commission
+
+```{r commit_errors_plot, fig.width=5, fig.height=3}
+df1_err_commit <- df1 %>%
+  filter(resp.required == "no" & resp.issued == "yes")
+table_err_commit <- with(df1_err_commit, table(effort, valence, target.pos))
+
+ggplot(as.data.frame(table_err_commit), aes(x = target.pos, y = Freq)) +
+  geom_bar(
+    aes(fill = valence), stat = "identity", color = "white",
+    position = position_dodge(0.9)) +
+  facet_wrap(~ effort) +
+  fill_palette("jco")
+ftable(table_err_commit)
+```
+
+```{r summary_stats}
+# Remove scr trials
+df1_correct_noscr <- df1_correct %>%
+  filter(valence != "scr") %>%
+  droplevels()
+
+# Summary stats for each cell
+rt_summary_stats <- df1_correct_noscr %>%
+  group_by(effort, target.pos, valence) %>%
+  get_summary_stats(RT, type = "mean_ci")
+
+rt_temp <- rt_summary_stats
+rt_temp$subj <- paste("mPFE3_", params$subj_id, sep = "")
+rt_summary_stats_print <- data.frame(rt_temp$subj, rt_temp$valence, rt_temp$effort, rt_temp$target.pos, rt_temp$mean, rt_temp$ci)
+out_dir <- paste("/Users/Riccardo/Desktop/analisi_comportamentali/mPFE3_", params$subj_id, "/mPFE3_", params$subj_id, "_results.csv", sep = "")
+write.csv(rt_summary_stats_print, out_dir, row.names = FALSE)
+```
+
+# Response times (correct trials only)
+
+```{r, rt_boxplot, fig.width=5, fig.height=3}
+# Boxplots
+rt_barplot <- ggboxplot(
+  df1_correct_noscr, x = "target.pos", y = "RT", 
+  color = "valence", palette = "jco", facet.by = "effort")
+  #title = "Response times (correct responses)")
+rt_barplot
+```
+
+```{r, rt_interplot, fig.width=5, fig.height=3}
+# Interaction plots
+rt_interplot <- df1_correct_noscr %>% 
+  ggplot() +
+  aes(x = target.pos, color = valence, group = valence, y = RT) +
+  stat_summary(fun = mean, geom = "point") +
+  stat_summary(fun = mean, geom = "line") +
+  stat_summary(fun.data = mean_cl_normal, geom = "errorbar", width = .1) + facet_wrap(~ effort)
+rt_interplot
+```
+
+## Outliers
+
+```{r outliers, fig.width=5, fig.height=3}
+# Identify outliers
+df1_correct_noscr %>%
+  select(-c(stim.idx.local, stim.name, resp.required,
+            condition, stim.idx.global, resp.issued)) %>%
+  group_by(effort, target.pos, valence) %>%
+  identify_outliers(RT) %>%
+  print.data.frame()
+```
+
+## Normality check (Shapiro-Wilk)
+
+```{r, fig.width=3, fig.height=3}
+# Normality assumption
+rt_lm  <- lm(RT ~ effort * target.pos * valence, 
+             data = df1_correct_noscr)
+# Create a QQ plot of residuals
+ggqqplot(residuals(rt_lm))
+# Compute Shapiro-Wilk test of normality
+```
+
+```{r}
+shapiro_test(residuals(rt_lm))
+```
+
+## Cell-wise normality check (Shapiro-Wilk)
+```{r}
+# Check normality assumption by group
+df1_correct_noscr %>%
+  group_by(effort, target.pos, valence) %>%
+  shapiro_test(RT)
+```
+
+## Cell-wise QQplot for each cell
+
+```{r, fig.height=7, fig.width=4}
+ggqqplot(df1_correct_noscr, "RT", ggtheme = theme_bw()) +
+  facet_grid(valence + target.pos ~ effort, labeller = "label_both")
+```
+
+## Homogeneity of variance
+
+```{r}
+# Homogeneity of variance
+df1_correct_noscr %>% levene_test(RT ~ valence * target.pos * effort)
+```
+
+## ANOVA on RTs
+
+```{r anova}
+rt.aov <- df1_correct_noscr %>% anova_test(RT ~ valence * target.pos * effort)
+```
+
+```{r anova_table}
+pander(rt.aov)
+```
+
+```{r rt_summary_stats, results = 'asis'}
+pander(rt_summary_stats)
+```
+
+
+

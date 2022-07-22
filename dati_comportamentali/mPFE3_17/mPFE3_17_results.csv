@@ -1,0 +1,9 @@
+"rt_temp.subj","rt_temp.valence","rt_temp.effort","rt_temp.target.pos","rt_temp.mean","rt_temp.ci"
+"mPFE3_17","neg","EXR","stim.near",221.474,12.626
+"mPFE3_17","pos","EXR","stim.near",230.622,18.326
+"mPFE3_17","neg","EXR","stim.far",208.179,14.175
+"mPFE3_17","pos","EXR","stim.far",226.575,15.77
+"mPFE3_17","neg","RLX","stim.near",269.35,12.185
+"mPFE3_17","pos","RLX","stim.near",280.605,22.282
+"mPFE3_17","neg","RLX","stim.far",242.974,10.192
+"mPFE3_17","pos","RLX","stim.far",243.158,10.12
